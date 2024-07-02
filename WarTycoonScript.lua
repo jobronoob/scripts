@@ -1,4 +1,4 @@
--- Define variables
+
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -10,17 +10,17 @@ local IsAiming = false
 local ClosestPlayer = nil
 
 _G.AimbotEnabled = true
-_G.TeamCheck = false -- If set to true then the script would only lock your aim at enemy team members.
-_G.AimPart = "Head" -- Where the aimbot script would lock at.
-_G.Sensitivity = 0 -- How many seconds it takes for the aimbot script to officially lock onto the target's aimpart.
+_G.TeamCheck = false
+_G.AimPart = "Head"
+_G.Sensitivity = 0 
 
-_G.CircleSides = 64 -- How many sides the FOV circle would have.
-_G.CircleColor = Color3.fromRGB(255, 255, 255) -- (RGB) Color that the FOV circle would appear as.
-_G.CircleTransparency = 0.7 -- Transparency of the circle.
-_G.CircleRadius = 80 -- The radius of the circle / FOV.
-_G.CircleFilled = false -- Determines whether or not the circle is filled.
-_G.CircleVisible = true -- Determines whether or not the circle is visible.
-_G.CircleThickness = 0 -- The thickness of the circle.
+_G.CircleSides = 64
+_G.CircleColor = Color3.fromRGB(255, 255, 255)
+_G.CircleTransparency = 0.7
+_G.CircleRadius = 80
+_G.CircleFilled = false 
+_G.CircleVisible = true
+_G.CircleThickness = 0
 
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
@@ -33,7 +33,6 @@ FOVCircle.Transparency = _G.CircleTransparency
 FOVCircle.NumSides = _G.CircleSides
 FOVCircle.Thickness = _G.CircleThickness
 
--- Function to get players in FOV
 local function GetPlayersInFOV()
     local PlayersInFOV = {}
 
@@ -43,22 +42,36 @@ local function GetPlayersInFOV()
                 if v.Team ~= LocalPlayer.Team then
                     local Character = v.Character
                     if Character and Character:FindFirstChild("HumanoidRootPart") and Character:FindFirstChild("Humanoid") and Character.Humanoid.Health > 0 then
-                        local ScreenPoint = Camera:WorldToScreenPoint(Character.HumanoidRootPart.Position)
-                        local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
+                        local HumanoidRoot = Character.HumanoidRootPart
+                        local ScreenPoint = Camera:WorldToScreenPoint(HumanoidRoot.Position)
 
-                        if VectorDistance < _G.CircleRadius then
-                            table.insert(PlayersInFOV, v)
+                        local Direction = (HumanoidRoot.Position - Camera.CFrame.Position).unit
+                        local DotProduct = Camera.CFrame.LookVector:Dot(Direction)
+
+                        if DotProduct > 0 then
+                            local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
+
+                            if VectorDistance < _G.CircleRadius then
+                                table.insert(PlayersInFOV, v)
+                            end
                         end
                     end
                 end
             else
                 local Character = v.Character
                 if Character and Character:FindFirstChild("HumanoidRootPart") and Character:FindFirstChild("Humanoid") and Character.Humanoid.Health > 0 then
-                    local ScreenPoint = Camera:WorldToScreenPoint(Character.HumanoidRootPart.Position)
-                    local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
+                    local HumanoidRoot = Character.HumanoidRootPart
+                    local ScreenPoint = Camera:WorldToScreenPoint(HumanoidRoot.Position)
 
-                    if VectorDistance < _G.CircleRadius then
-                        table.insert(PlayersInFOV, v)
+                    local Direction = (HumanoidRoot.Position - Camera.CFrame.Position).unit
+                    local DotProduct = Camera.CFrame.LookVector:Dot(Direction)
+
+                    if DotProduct > 0 then
+                        local VectorDistance = (Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y) - Vector2.new(ScreenPoint.X, ScreenPoint.Y)).Magnitude
+
+                        if VectorDistance < _G.CircleRadius then
+                            table.insert(PlayersInFOV, v)
+                        end
                     end
                 end
             end
@@ -67,6 +80,7 @@ local function GetPlayersInFOV()
 
     return PlayersInFOV
 end
+
 
 UserInputService.InputBegan:Connect(function(Input)
     if Input.KeyCode == Enum.KeyCode.LeftAlt then
@@ -77,11 +91,10 @@ end)
 UserInputService.InputEnded:Connect(function(Input)
     if Input.KeyCode == Enum.KeyCode.LeftAlt then
         Holding = false
-        IsAiming = false  -- Reset aiming state on release
+        IsAiming = false
     end
 end)
 
--- RenderStepped function to handle aimbot logic
 RunService.RenderStepped:Connect(function()
     FOVCircle.Position = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
     FOVCircle.Radius = _G.CircleRadius
@@ -99,7 +112,6 @@ RunService.RenderStepped:Connect(function()
             ClosestPlayer = nil
             local ClosestDistance = math.huge
 
-            -- Find closest player in FOV
             for _, Player in ipairs(PlayersInFOV) do
                 local Character = Player.Character
                 if Character and Character[_G.AimPart] then
@@ -113,7 +125,6 @@ RunService.RenderStepped:Connect(function()
                 end
             end
 
-            -- Aim at closest player
             if ClosestPlayer then
                 IsAiming = true
                 local Character = ClosestPlayer.Character
@@ -122,7 +133,6 @@ RunService.RenderStepped:Connect(function()
                 end
             end
         else
-            -- Continue aiming at current ClosestPlayer
             if ClosestPlayer then
                 local Character = ClosestPlayer.Character
                 if Character and Character[_G.AimPart] then
@@ -131,7 +141,7 @@ RunService.RenderStepped:Connect(function()
             end
         end
     else
-        IsAiming = false  -- Reset aiming state if not holding
+        IsAiming = false  
     end
 end)
 
@@ -146,7 +156,7 @@ local ESP = {}
 
 local function createESP(player)
     if ESP[player] then
-        return  -- ESP already created for this player
+        return  
     end
 
     local Box = Drawing.new("Square")
@@ -180,95 +190,118 @@ local function createESP(player)
     NameText.OutlineColor = Color3.fromRGB(0, 0, 0)
     NameText.Text = player.Name
 
+    local ShieldText = Drawing.new("Text")  
+    ShieldText.Visible = false 
+    ShieldText.Color = Color3.fromRGB(255, 255, 255)
+    ShieldText.Size = 14
+    ShieldText.Center = true
+    ShieldText.Outline = true
+    ShieldText.OutlineColor = Color3.fromRGB(0, 0, 0)
+
     ESP[player] = {
         Box = Box,
         HealthText = HealthText,
         WeaponText = WeaponText,
         NameText = NameText,
+        ShieldText = ShieldText, 
         LastEquipped = nil,
         TextOffset = Vector2.new(0, 0)
     }
 
-    local function updateESP()
-        if not ESP[player] then
-            return
-        end
+local function updateESP()
+    if not ESP[player] then
+        return
+    end
 
-        local character = player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") and player ~= LocalPlayer then
-            local RootPart = character.HumanoidRootPart
-            local Humanoid = character.Humanoid
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") and player ~= LocalPlayer then
+        local RootPart = character.HumanoidRootPart
+        local Humanoid = character.Humanoid
 
-            local Vector, OnScreen = Camera:WorldToViewportPoint(RootPart.Position)
+        local Vector, OnScreen = Camera:WorldToViewportPoint(RootPart.Position)
 
-            if OnScreen then
-                -- Update box size and position
-                Box.Size = Vector2.new(2000 / Vector.Z, 2500 / Vector.Z)
-                Box.Position = Vector2.new(Vector.X - Box.Size.X / 2, Vector.Y - Box.Size.Y / 2)
-                Box.Visible = ESP_ENABLED
+        if OnScreen then
+            Box.Size = Vector2.new(2000 / Vector.Z, 2500 / Vector.Z)
+            Box.Position = Vector2.new(Vector.X - Box.Size.X / 2, Vector.Y - Box.Size.Y / 2)
+            Box.Visible = ESP_ENABLED
 
-                -- Update health text
-                local hp = Humanoid.Health
-                local maxHp = Humanoid.MaxHealth
-                local hpDisplay = string.format("%d / %d", hp, maxHp)
+            local hp = Humanoid.Health
+            local maxHp = Humanoid.MaxHealth
+            local hpDisplay = string.format("%d / %d", hp, maxHp)
 
-                HealthText.Text = hpDisplay
-                HealthText.Position = Vector2.new(Vector.X, Vector.Y + Box.Size.Y / 2 + 20)
-                HealthText.Visible = ESP_ENABLED
+            HealthText.Text = hpDisplay
+            HealthText.Position = Vector2.new(Vector.X, Vector.Y + Box.Size.Y / 2 + 20)
+            HealthText.Visible = ESP_ENABLED
 
-                -- Update weapon text
-                local currentWeapon = Humanoid.Parent:FindFirstChildOfClass("Tool")
-                if currentWeapon then
-                    WeaponText.Text = currentWeapon.Name
-                    WeaponText.Position = Vector2.new(Vector.X, Vector.Y + Box.Size.Y / 2 + 40)
-                    WeaponText.Visible = ESP_ENABLED
-                    ESP[player].LastEquipped = currentWeapon.Name
-                else
-                    WeaponText.Visible = false
-                    ESP[player].LastEquipped = nil
+            local hasShield = false
+            for _, part in ipairs(character:GetChildren()) do
+                if part.Name == "Shield" then
+                    hasShield = true
+                    break
                 end
+            end
 
-                -- Update name text
-                NameText.Position = Vector2.new(Vector.X, Vector.Y - Box.Size.Y / 2 - 20)
-                NameText.Visible = ESP_ENABLED
+
+            if hasShield then
+                ShieldText.Text = "Shielded"
+                ShieldText.Position = Vector2.new(Vector.X, Vector.Y + Box.Size.Y / 2 + 40)
+                ShieldText.Visible = ESP_ENABLED
             else
-                Box.Visible = false
-                HealthText.Visible = false
+                ShieldText.Visible = false
+            end
+                
+            local currentWeapon = Humanoid.Parent:FindFirstChildOfClass("Tool")
+            if currentWeapon then
+                WeaponText.Text = currentWeapon.Name
+                WeaponText.Position = Vector2.new(Vector.X, Vector.Y + Box.Size.Y / 2 + 60)
+                WeaponText.Visible = ESP_ENABLED
+                ESP[player].LastEquipped = currentWeapon.Name
+            else
                 WeaponText.Visible = false
-                NameText.Visible = false
                 ESP[player].LastEquipped = nil
             end
+
+            NameText.Position = Vector2.new(Vector.X, Vector.Y - Box.Size.Y / 2 - 20)
+            NameText.Visible = ESP_ENABLED
         else
             Box.Visible = false
             HealthText.Visible = false
+            ShieldText.Visible = false
             WeaponText.Visible = false
             NameText.Visible = false
             ESP[player].LastEquipped = nil
         end
+    else
+        Box.Visible = false
+        HealthText.Visible = false
+        ShieldText.Visible = false
+        WeaponText.Visible = false
+        NameText.Visible = false
+        ESP[player].LastEquipped = nil
     end
+end
+
 
     RunService.RenderStepped:Connect(updateESP)
 
     local function onCharacterRemoving()
-        -- Disconnect RenderStepped listener
         RunService.RenderStepped:Disconnect()
-        
-        -- Remove drawing objects
+
         Box:Remove()
         HealthText:Remove()
         WeaponText:Remove()
         NameText:Remove()
+        ShieldText:Remove() 
 
-        -- Remove from ESP table
         ESP[player] = nil
     end
 
     player.CharacterRemoving:Connect(onCharacterRemoving)
     player.CharacterAdded:Connect(updateESP)
 
-    -- Trigger initial update
     updateESP()
 end
+
 
 local function toggleESP()
     ESP_ENABLED = not ESP_ENABLED
@@ -284,17 +317,14 @@ local function toggleESP()
     end
 end
 
--- Создание ESP для каждого игрока при их добавлении
 Players.PlayerAdded:Connect(function(player)
     createESP(player)
 end)
 
--- Удаление ESP при удалении игрока
 Players.PlayerRemoving:Connect(function(player)
     removeESP(player)
 end)
 
--- Создание ESP для уже существующих игроков
 for _, player in pairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
         createESP(player)
@@ -302,7 +332,6 @@ for _, player in pairs(Players:GetPlayers()) do
 end
 
 local function initialize()
-    -- Создание GUI элементов
     local UserInputService = game:GetService("UserInputService")
     local player = Players.LocalPlayer
 
@@ -312,19 +341,18 @@ local function initialize()
     ScreenGui.Parent = player:WaitForChild("PlayerGui")
     Panel.Parent = ScreenGui
     Panel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Panel.Position = UDim2.new(0.5, -400, 0.5, -150) -- Положение в середине экрана и смещение на половину ширины и высоты
-    Panel.Size = UDim2.new(0, 800, 0, 300) -- Размер панели
+    Panel.Position = UDim2.new(0.5, -400, 0.5, -150) 
+    Panel.Size = UDim2.new(0, 800, 0, 300) 
     Panel.BorderSizePixel = 0
-    Panel.BackgroundTransparency = 0.5 -- Example transparency value (adjust as needed)
+    Panel.BackgroundTransparency = 0.5
 
     local OriginalSize = Panel.Size
 
 
     local function togglePanel()
         if Panel.Visible then
-            -- Hide the panel smoothly
             Panel.Visible = false
-            local endPosition = UDim2.new(-0.5, 0, 0.5, 0)  -- Position the panel off-screen to the left
+            local endPosition = UDim2.new(-0.5, 0, 0.5, 0)
             local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
             local panelTween = TweenService:Create(Panel, tweenInfo, {Position = endPosition})
@@ -332,14 +360,14 @@ local function initialize()
             panelTween:Play()
 
             panelTween.Completed:Connect(function()
-                -- Ensure the panel is hidden completely after animation
+            
                 Panel.Visible = false
             end)
         else
-            -- Show the panel smoothly
+
             Panel.Visible = true
-            Panel.Position = UDim2.new(-0.5, 0, 0.5, 0)  -- Position the panel off-screen to the left
-            local endPosition = UDim2.new(0.5, -400, 0.5, -150)  -- Position the panel in the center
+            Panel.Position = UDim2.new(-0.5, 0, 0.5, 0)  
+            local endPosition = UDim2.new(0.5, -400, 0.5, -150)
             local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 
             local panelTween = TweenService:Create(Panel, tweenInfo, {Position = endPosition})
@@ -675,21 +703,19 @@ local function initialize()
         local torso = character:FindFirstChild("HumanoidRootPart")
 
         if torso then
-            -- Создаем и настраиваем BodyVelocity для движения
             bodyVelocity = Instance.new("BodyVelocity")
-            bodyVelocity.Velocity = Vector3.new(0, 0, 0)  -- Начальная скорость (0, 0, 0)
-            bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)  -- Максимальная сила, чтобы игнорировать массу
-            bodyVelocity.Parent = torso  -- Ставим BodyVelocity в HumanoidRootPart
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge) 
+            bodyVelocity.Parent = torso 
 
-            -- Создаем и настраиваем BodyGyro для стабилизации
             bodyGyro = Instance.new("BodyGyro")
-            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)  -- Максимальный крутящий момент для стабилизации
-            bodyGyro.P = 9e4  -- Параметр P для BodyGyro
-            bodyGyro.Parent = torso  -- Ставим BodyGyro в HumanoidRootPart
+            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+            bodyGyro.P = 9e4  
+            bodyGyro.Parent = torso
 
-            -- Слушаем RenderStepped, чтобы обновлять движение каждый кадр
+
             game:GetService("RunService").RenderStepped:Connect(function()
-                if not flyEnabled then return end  -- Если полет выключен, прерываем выполнение
+                if not flyEnabled then return end
 
                 local camCF = workspace.CurrentCamera.CFrame
                 bodyGyro.CFrame = CFrame.new(bodyGyro.Parent.Position, bodyGyro.Parent.Position + camCF.LookVector)
@@ -715,7 +741,7 @@ local function initialize()
                     moveDirection = moveDirection - Vector3.new(0, 1, 0)
                 end
 
-                bodyVelocity.Velocity = moveDirection * flySpeed  -- Устанавливаем скорость движения
+                bodyVelocity.Velocity = moveDirection * flySpeed
             end)
         end
     end
@@ -724,8 +750,7 @@ local function initialize()
 
     local noClipEnabled = false
     local teleportationEnabled = false
-
-    -- Функция для включения или выключения полета
+    
     local function toggleFly()
         flyEnabled = not flyEnabled
         
@@ -744,7 +769,6 @@ local function initialize()
         local character = LocalPlayer.Character
         if character then
             if enabled then
-                -- Enable NoClip
                 local connection = RunService.Stepped:Connect(function()
                     for _, child in pairs(character:GetDescendants()) do
                         if child:IsA("BasePart") then
@@ -754,17 +778,15 @@ local function initialize()
                 end)
                 table.insert(noClipConnections, connection)
             else
-                -- Disable NoClip
                 for _, child in pairs(character:GetDescendants()) do
                     if child:IsA("BasePart") then
                         child.CanCollide = true
                     end
                 end
-                -- Disconnect all Stepped connections
                 for _, connection in ipairs(noClipConnections) do
                     connection:Disconnect()
                 end
-                noClipConnections = {}  -- Clear the connections table
+                noClipConnections = {} 
             end
         end
     end
@@ -791,8 +813,6 @@ local function initialize()
 
     UserInputService.InputBegan:Connect(handleTeleportation)
 
-
-    -- Функция для выключения полета
     function stopFly()
         flyEnabled = false
         if bodyVelocity then
@@ -821,7 +841,6 @@ local function initialize()
         TeleportationToggleButton.Text = teleportationEnabled and "Деактивировать" or "Активировать"
     end)
 
-    -- Управление отображением GUI
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed then
             if input.KeyCode == Enum.KeyCode.Insert then
@@ -837,14 +856,12 @@ local function initialize()
 end
 
 local function onCharacterAdded(character)
-    -- Задержка для обеспечения полной загрузки персонажа
     wait(1)
     initialize()
 end
 
 LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
 
--- Запускаем инициализацию для текущего персонажа
 if LocalPlayer.Character then
     onCharacterAdded(LocalPlayer.Character)
 end
