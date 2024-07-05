@@ -78,7 +78,7 @@ local Frame = Instance.new("Frame")
 Frame.Size = UDim2.new(0, 200, 0, 150)
 Frame.Position = UDim2.new(0.5, -100, 0.5, -75)
 Frame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-Frame.Visible = false  -- По умолчанию скрываем панель
+Frame.Visible = true  -- По умолчанию показываем панель
 Frame.Parent = TeleportGui
 
 -- Создаем кнопку для телепортации ко всем Tank Crate
