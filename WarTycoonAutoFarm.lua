@@ -75,11 +75,33 @@ local TeleportGui = Instance.new("ScreenGui")
 TeleportGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 200, 0, 150)
+Frame.Size = UDim2.new(0, 200, 0, 200)
 Frame.Position = UDim2.new(0.5, 500, 0.5, -75)
 Frame.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
 Frame.Visible = true  -- По умолчанию показываем панель
 Frame.Parent = TeleportGui
+
+-- Создаем кнопку для телепортации ко всем Tank Crate
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(0, 180, 0, 40)
+teleportButton.Position = UDim2.new(0.5, 0, 0, 100)
+teleportButton.AnchorPoint = Vector2.new(0.5, 0)
+teleportButton.Text = "Телепорт к точке"
+teleportButton.Parent = Frame
+
+-- Функция для телепортации игрока
+local function teleportToCapturePoint()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local capturePoint = game.Workspace.Beams.CapturePoint1
+    
+    if character and capturePoint then
+        character:MoveTo(capturePoint.Position)
+    end
+end
+
+-- Привязываем функцию телепортации к кнопке
+teleportButton.MouseButton1Click:Connect(teleportToCapturePoint)
 
 -- Создаем кнопку для телепортации ко всем Tank Crate
 local teleportButtonTank = Instance.new("TextButton")
