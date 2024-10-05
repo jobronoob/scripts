@@ -93,7 +93,7 @@ local function shouldIgnoreButton(buttonName)
         "Boxer CRV",
         "MiG-29 Fulcrum",
         "F-4 Phantom",
-        "F-35 Lightning",
+        "F-35 Lightning toputtenga",
         "WW2 US Army Pack",
         "F-14 Tomcat",
         "F-16 Falcon",
