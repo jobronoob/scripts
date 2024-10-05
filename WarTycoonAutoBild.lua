@@ -39,7 +39,7 @@ local function shouldIgnoreButton(buttonName)
         "AWP Giver",
         "Auto Collect Gamepass",
         "2x Cash Gamepass",
-        "2x Health Armor",
+        "2x Health Armor puttenga",
         "Speedy Oil Extractor",
         "FAMAS Group Gun",
         "GTE Shirt",
